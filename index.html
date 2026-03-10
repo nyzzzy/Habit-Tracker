@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Habits" />
+  <meta name="apple-mobile-web-app-title" content="REDUX" />
   <meta name="theme-color" content="#0a0a0f" />
-  <title>Habits</title>
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <title>REDUX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -28,7 +27,9 @@
 
     header { padding: 56px 0 24px; display: flex; align-items: flex-end; justify-content: space-between; }
     .date-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
-    header h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; background: linear-gradient(135deg, #e8e8f0 30%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-title-row { display: flex; align-items: center; gap: 12px; }
+    .header-logo { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; }
+    header h1 { font-size: 32px; font-weight: 800; letter-spacing: 0.06em; line-height: 1; background: linear-gradient(135deg, #e8e8f0 30%, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
     .streak-badge { display: flex; align-items: center; gap: 6px; background: var(--accent-glow); border: 1px solid #7c6bff44; border-radius: 999px; padding: 6px 12px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent2); }
     .streak-badge .fire { font-size: 16px; }
@@ -144,6 +145,53 @@
     .confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; overflow: hidden; }
     .confetti-piece { position: absolute; animation: confettiFall 1.2s ease-out forwards; }
     @keyframes confettiFall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+    /* Check-off confetti (card burst) */
+    .card-confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 998; overflow: hidden; }
+    .card-confetti-piece { position: absolute; border-radius: 2px; animation: cardConfetti 0.9s cubic-bezier(.2,.8,.3,1) forwards; }
+    @keyframes cardConfetti {
+      0%   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.4); }
+    }
+
+    /* Streak shockwave */
+    .shockwave-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 997; display: flex; align-items: center; justify-content: center; }
+    .shockwave-ring { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent); animation: shockwave 1s ease-out forwards; }
+    .shockwave-ring:nth-child(2) { animation-delay: 0.15s; border-color: var(--accent2); }
+    .shockwave-ring:nth-child(3) { animation-delay: 0.3s; border-color: var(--green); }
+    @keyframes shockwave {
+      0%   { transform: scale(0.5); opacity: 1; }
+      100% { transform: scale(8); opacity: 0; }
+    }
+    .streak-float { position: absolute; font-family: 'Syne', sans-serif; font-size: 72px; font-weight: 800; color: var(--green); text-shadow: 0 0 60px #34d39966; animation: streakFloat 2.2s ease-out forwards; pointer-events: none; z-index: 999; left: 50%; top: 45%; transform: translate(-50%, -50%); white-space: nowrap; }
+    @keyframes streakFloat {
+      0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+      25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+      60%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -80%) scale(0.95); }
+    }
+    .streak-label { position: absolute; font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: 0.04em; animation: streakFloat 2.2s ease-out forwards; animation-delay: 0.15s; opacity: 0; left: 50%; top: calc(45% + 52px); transform: translate(-50%, -50%); white-space: nowrap; }
+
+    /* Per-habit swipeable charts */
+    .habit-charts-outer { position: relative; margin-bottom: 28px; }
+    .habit-charts-carousel { overflow: hidden; border-radius: var(--radius); }
+    .habit-charts-track { display: flex; transition: transform 0.35s cubic-bezier(.4,0,.2,1); will-change: transform; }
+    .habit-chart-slide { min-width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 18px 14px; box-sizing: border-box; }
+    .habit-chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .habit-chart-name { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .habit-chart-stats { text-align: right; }
+    .habit-chart-avg { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent2); }
+    .habit-chart-freq { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .habit-chart-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+    .habit-chart-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); transition: background 0.2s, transform 0.2s; }
+    .habit-chart-dot.active { background: var(--accent2); transform: scale(1.3); }
+    .habit-chart-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+    .habit-chart-nav-btn { background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; width: 32px; height: 32px; color: var(--muted); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s; }
+    .habit-chart-nav-btn:active { border-color: var(--accent); color: var(--accent2); }
+    .habit-chart-nav-btn:disabled { opacity: 0.2; cursor: default; }
+    .habit-chart-counter { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+    /* min line label */
+    .min-line-label { font-family: 'DM Mono', monospace; font-size: 8px; fill: var(--amber); }
   </style>
 </head>
 <body>
@@ -151,7 +199,10 @@
   <header>
     <div class="header-left">
       <div class="date-label" id="dateLabel"></div>
-      <h1>Today</h1>
+      <div class="header-title-row">
+        <img class="header-logo" src="data:image/png;base64,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" alt="Logo" />
+        <h1>REDUX</h1>
+      </div>
     </div>
     <div class="header-right">
       <div class="streak-badge"><span class="fire">🔥</span><span id="overallStreak">0</span></div>
@@ -204,6 +255,9 @@
     <div id="chartInner"></div>
   </div>
 
+  <div class="section-label" id="habitChartsLabel" style="display:none">Habit Breakdown</div>
+  <div id="habitChartsSection"></div>
+
   <div class="section-label">Your Data</div>
   <div class="data-card">
     <div class="data-row">
@@ -220,6 +274,8 @@
 </div>
 
 <div class="confetti-wrap" id="confettiWrap"></div>
+<div class="card-confetti-wrap" id="cardConfettiWrap"></div>
+<div class="shockwave-wrap" id="shockwaveWrap"></div>
 <div id="modalRoot"></div>
 <div class="toast" id="toast"></div>
 
@@ -305,9 +361,23 @@ function toggleHabit(id) {
   const s = getState();
   const k = todayKey();
   if (!s.log[k]) s.log[k] = {};
-  s.log[k][id] = !s.log[k][id];
+  const wasChecked = s.log[k][id];
+  s.log[k][id] = !wasChecked;
   saveState(s);
-  if (s.habits.length && s.habits.every(h => s.log[k] && s.log[k][h.id])) confetti();
+
+  if (!wasChecked) {
+    // Burst confetti from card
+    const card = document.querySelector(`[data-habit-id="${id}"]`);
+    cardConfetti(card);
+
+    // If all habits now done today = 100%
+    const s2 = getState();
+    const k2 = todayKey();
+    const allDone = s2.habits.length > 0 && s2.habits.every(h => s2.log[k2] && s2.log[k2][h.id]);
+    if (allDone) {
+      setTimeout(() => streakAnimation(), 500);
+    }
+  }
   render();
 }
 
@@ -448,6 +518,7 @@ function render() {
       const countLabel = h.minFreq === h.maxFreq ? `${weekCount}/${h.minFreq}` : `${weekCount}/${h.minFreq}–${h.maxFreq}`;
       const card = document.createElement('div');
       card.className = 'habit-card' + (doneToday ? ' done' : '');
+      card.dataset.habitId = h.id;
       card.innerHTML = `
         <div class="habit-top">
           <button class="check-btn" onclick="toggleHabit(${h.id})">${doneToday ? '✓' : ''}</button>
@@ -474,6 +545,7 @@ function render() {
   document.getElementById('progressPct').textContent = pct + '%';
 
   renderChart(s, today);
+  renderHabitCharts(s, today);
 }
 
 /* ---- CHART ---- */
@@ -613,17 +685,216 @@ function setupChartDrag(el) {
   el.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); const x = e.pageX - el.offsetLeft; el.scrollLeft = scrollLeft - (x - startX); });
 }
 
-function confetti() {
-  const wrap = document.getElementById('confettiWrap');
-  wrap.innerHTML = '';
+function cardConfetti(cardEl) {
+  const wrap = document.getElementById('cardConfettiWrap');
   const cols = ['#7c6bff','#34d399','#fbbf24','#f472b6','#60a5fa','#fff'];
-  for (let i = 0; i < 40; i++) {
+  // Get card center position
+  let cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  if (cardEl) {
+    const rect = cardEl.getBoundingClientRect();
+    cx = rect.left + rect.width / 2;
+    cy = rect.top + rect.height / 2;
+  }
+  for (let i = 0; i < 28; i++) {
     const p = document.createElement('div');
-    p.className = 'confetti-piece';
-    p.style.cssText = `left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};animation-delay:${Math.random()*.4}s;animation-duration:${.9+Math.random()*.6}s;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'}`;
+    p.className = 'card-confetti-piece';
+    const angle = (Math.random() * 360) * Math.PI / 180;
+    const dist = 60 + Math.random() * 120;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - 40;
+    const rot = (Math.random() - 0.5) * 720;
+    const size = 5 + Math.random() * 7;
+    p.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      width:${size}px; height:${size}px;
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      --tx:${tx}px; --ty:${ty}px; --rot:${rot}deg;
+      animation-duration:${0.7 + Math.random() * 0.4}s;
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+    `;
     wrap.appendChild(p);
   }
-  setTimeout(() => wrap.innerHTML = '', 2000);
+  setTimeout(() => wrap.innerHTML = '', 1500);
+}
+
+function streakAnimation() {
+  const wrap = document.getElementById('shockwaveWrap');
+  wrap.innerHTML = `
+    <div class="shockwave-ring"></div>
+    <div class="shockwave-ring"></div>
+    <div class="shockwave-ring"></div>
+    <div class="streak-float">100%</div>
+    <div class="streak-label">Nailed It Today</div>
+  `;
+  setTimeout(() => wrap.innerHTML = '', 2500);
+}
+
+
+/* ---- PER-HABIT CHARTS ---- */
+function renderHabitCharts(s, today) {
+  const section = document.getElementById('habitChartsSection');
+  const label = document.getElementById('habitChartsLabel');
+  if (!s.habits.length) {
+    section.innerHTML = '';
+    if (label) label.style.display = 'none';
+    return;
+  }
+  if (label) label.style.display = '';
+
+  const thisSun = weekSunday(today);
+  const earliest = earliestWeek(s);
+  let startSun;
+  if (earliest) {
+    startSun = new Date(earliest);
+    startSun.setDate(startSun.getDate() - 7);
+  } else {
+    startSun = new Date(thisSun);
+    startSun.setDate(thisSun.getDate() - 7 * 7);
+  }
+
+  // Build weeks array
+  const weeks = [];
+  const cur = new Date(startSun);
+  while (cur <= thisSun) { weeks.push(new Date(cur)); cur.setDate(cur.getDate() + 7); }
+
+  // Build slides HTML
+  const H = 110, PT = 14, PB = 22, PL = 32, PR = 16;
+  const COL_W = 52;
+  const cH = H - PT - PB;
+
+  const slides = s.habits.map((habit, hi) => {
+    const color = habit.color || COLORS[hi % COLORS.length];
+    const N = weeks.length;
+    const counts = weeks.map(sun => doneInWeek(s, habit.id, sun));
+    const maxVal = Math.max(habit.maxFreq, ...counts, 1);
+    const totalW = PL + N * COL_W + PR;
+    const xs = counts.map((_, i) => PL + i * COL_W + COL_W / 2);
+    const ys = counts.map(c => PT + cH - (c / maxVal) * cH);
+
+    // Average completions per week (excluding zero weeks at start)
+    const nonZero = counts.filter(c => c > 0);
+    const avg = nonZero.length ? (nonZero.reduce((a,b) => a+b,0) / nonZero.length).toFixed(1) : '—';
+
+    // Grid lines (0, min, max)
+    let g = '';
+    const gridVals = [...new Set([0, habit.minFreq, habit.maxFreq, maxVal])].sort((a,b)=>a-b);
+    gridVals.forEach(v => {
+      const y = PT + cH - (v / maxVal) * cH;
+      const isMin = v === habit.minFreq;
+      const col = isMin ? '#fbbf2440' : '#ffffff08';
+      const textCol = isMin ? '#fbbf24' : '#6b6b80';
+      g += `<line x1="${PL}" y1="${y}" x2="${totalW - PR}" y2="${y}" stroke="${col}" stroke-width="${isMin ? 1.5 : 1}" stroke-dasharray="${isMin ? '4,3' : 'none'}"/>`;
+      g += `<text x="${PL - 4}" y="${y + 3}" fill="${textCol}" font-size="8" text-anchor="end" font-family="DM Mono,monospace">${v}</text>`;
+    });
+
+    // Bar chart columns (not line — counts are discrete)
+    let bars = '';
+    const barW = Math.max(8, COL_W - 16);
+    counts.forEach((c, i) => {
+      if (c === 0) return;
+      const barH = (c / maxVal) * cH;
+      const x = xs[i] - barW / 2;
+      const y = PT + cH - barH;
+      const isCur = i === N - 1;
+      const metMin = c >= habit.minFreq;
+      const fillCol = isCur ? color : (metMin ? color + 'bb' : color + '55');
+      bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="3" fill="${fillCol}"/>`;
+      if (isCur || c >= habit.minFreq) {
+        bars += `<text x="${xs[i]}" y="${y - 4}" fill="${fillCol}" font-size="8" text-anchor="middle" font-family="DM Mono,monospace">${c}</text>`;
+      }
+    });
+
+    // X labels
+    let xLabels = '';
+    weeks.forEach((sun, i) => {
+      const isCur = i === N - 1;
+      let lbl;
+      if (isCur) { lbl = 'Now'; }
+      else if (sun.getDate() <= 7 || i === 0) { lbl = sun.toLocaleDateString('en-US', { month:'short', day:'numeric' }); }
+      else { lbl = sun.toLocaleDateString('en-US', { day:'numeric' }); }
+      xLabels += `<div class="chart-x-label ${isCur ? 'cur' : ''}" style="width:${COL_W}px;left:${xs[i] - COL_W/2}px">${lbl}</div>`;
+    });
+
+    const freqLabel = habit.minFreq === habit.maxFreq ? `${habit.minFreq}×/wk` : `${habit.minFreq}–${habit.maxFreq}×/wk target`;
+
+    return `
+      <div class="habit-chart-slide">
+        <div class="habit-chart-header">
+          <div class="habit-chart-name" style="color:${color}">${esc(habit.name)}</div>
+          <div class="habit-chart-stats">
+            <div class="habit-chart-avg">avg ${avg}× / week</div>
+            <div class="habit-chart-freq">${freqLabel}</div>
+          </div>
+        </div>
+        <div class="chart-scroll-outer">
+          <div class="chart-scroll hc-scroll" id="hcScroll${hi}">
+            <div class="chart-canvas-wrap" style="width:${totalW}px;height:${H + 20}px">
+              <svg width="${totalW}" height="${H}" viewBox="0 0 ${totalW} ${H}" style="display:block">
+                <defs>
+                  <linearGradient id="hg${hi}" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="${color}" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                ${g}${bars}
+              </svg>
+              <div class="chart-x-labels" style="height:20px;width:${totalW}px">${xLabels}</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-hint">← scroll to see full history →</div>
+      </div>`;
+  });
+
+  const totalSlides = slides.length;
+  let currentSlide = 0;
+
+  section.innerHTML = `
+    <div class="habit-charts-outer" id="habitChartsOuter">
+      <div class="habit-charts-carousel">
+        <div class="habit-charts-track" id="hcTrack">${slides.join('')}</div>
+      </div>
+      ${totalSlides > 1 ? `
+      <div class="habit-chart-nav">
+        <button class="habit-chart-nav-btn" id="hcPrev" onclick="hcNav(-1)" ${currentSlide === 0 ? 'disabled' : ''}>‹</button>
+        <div class="habit-chart-dots" id="hcDots">
+          ${slides.map((_, i) => `<div class="habit-chart-dot ${i === 0 ? 'active' : ''}" id="hcDot${i}"></div>`).join('')}
+        </div>
+        <button class="habit-chart-nav-btn" id="hcNext" onclick="hcNav(1)" ${currentSlide === totalSlides-1 ? 'disabled' : ''}>›</button>
+      </div>` : ''}
+    </div>`;
+
+  // Auto-scroll each habit scroll to end
+  s.habits.forEach((_, i) => {
+    const el = document.getElementById(`hcScroll${i}`);
+    if (el) { el.scrollLeft = 99999; setupChartDrag(el); }
+  });
+
+  // Touch swipe for carousel
+  const track = document.getElementById('hcTrack');
+  if (track && totalSlides > 1) {
+    let startX = 0, dragging = false;
+    track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; dragging = true; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      if (!dragging) return;
+      const diff = startX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) hcNav(diff > 0 ? 1 : -1);
+      dragging = false;
+    }, { passive: true });
+  }
+
+  window.hcNav = function(dir) {
+    const track = document.getElementById('hcTrack');
+    if (!track) return;
+    const dots = document.querySelectorAll('.habit-chart-dot');
+    currentSlide = Math.max(0, Math.min(totalSlides - 1, currentSlide + dir));
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+    const prev = document.getElementById('hcPrev');
+    const next = document.getElementById('hcNext');
+    if (prev) prev.disabled = currentSlide === 0;
+    if (next) next.disabled = currentSlide === totalSlides - 1;
+  };
 }
 
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
